@@ -1,0 +1,26 @@
+let cookiesAccepted = localStorage.getItem('cookiesAccepted');
+let cookiesNotification = document.createElement('div');
+cookiesNotification.className = 'cookies-notification-block';
+cookiesNotification.innerHTML = `
+    <div class="cookies-notification-text">
+        <div class="cookies-notification-title"> 
+            Important Cookie Information
+        </div>
+        <div class="cookies-notification-desc">
+            We use the minimal necessary cookies to ensure that we give you the best experience on our website. You must accept cookies in order to use our website. <a href="https://www.ivolatility.com/info/privacy.html" target="_blank">Learn more</a> about privacy at IVolatility.
+        </div>
+    </div>
+    <div class="cookies-notification-apply-btn">
+        I Accept
+    </div>
+`;
+
+if (!localStorage.getItem('cookiesAccepted')) {
+    document.body.appendChild(cookiesNotification);
+}
+
+let cookiesApplyBtn = document.querySelector('.cookies-notification-apply-btn');
+cookiesApplyBtn.addEventListener('click', () => {
+    localStorage.setItem('cookiesAccepted', true);
+    document.body.removeChild(cookiesNotification);
+});

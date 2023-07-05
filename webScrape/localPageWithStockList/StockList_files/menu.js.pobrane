@@ -1,0 +1,106 @@
+	var showflag = false; 
+	var showflag2 = false;
+	
+	var id = null; 
+	var id2 = null;
+	
+	var onname=""; 
+	var onname2="";
+
+	var debug = false;
+	var isNN = (document.layers) ? 1 : 0;
+	var isIE = (document.all)  ? 1 : 0;
+	var isMozilla = false;
+	var appVer = 0;
+	var menulevel = 0;
+	
+	function show(name, x, submenu, pos){
+		menulevel = submenu; 
+		
+		if (showflag && submenu!=2) {
+			hide(); 
+			killtimer();
+		} else if (showflag2 && submenu==2) {
+			hide2();
+			killtimer2();
+		}
+		
+		if (isNN){
+			document.layers[name].top = 105+(pos-1)*15;
+			document.layers[name].left =	x; 
+			document.layers[name].visibility='show';
+		} else if (isIE) {
+			document.all[name].style.top = 100+(pos-1)*15;
+			document.all[name].style.left = x;			
+			document.all[name].style.visibility='visible';
+		}
+		if (submenu == 2) {
+			showflag2=true;
+			onname2 = name;
+			reset2();
+		} else {
+			showflag=true;
+			onname=name;
+		}
+	}
+	
+	function killtimer(){
+		if (id!=null) { 
+			clearTimeout(id); 
+			id=null;
+		}
+		return true;
+	}
+	
+	function killtimer2(){
+		if (id2!=null) { 
+			clearTimeout(id2); 
+			id2=null;
+		}
+		return true;
+	}
+	
+	function hide2() {
+		if (id2!=null) {
+			killtimer2();
+		}
+	
+		if (showflag2) {
+			if (isNN) {
+				document.layers[onname2].visibility = 'hide';
+			} else if (isIE) {
+				document.all[onname2].style.visibility='hidden';
+			}
+		}
+		onname2 = "";
+		showflag2=false;			
+	}
+	
+	function hide() {
+		if (id!=null) {
+			killtimer();
+		}
+	
+		if (showflag && !showflag2) {
+			if (isNN) {
+				document.layers[onname].visibility = 'hide';
+			} else if (isIE) {
+				document.all[onname].style.visibility='hidden';
+			}
+			onname = "";
+			showflag=false;			
+		} else {
+			reset();
+		}
+	}
+	
+	function reset(){
+		killtimer();
+		id = setTimeout('hide()', 500);
+	}
+	
+	function reset2(){
+		killtimer2();
+		id2 = setTimeout('hide2()', 2000);
+	}
+	

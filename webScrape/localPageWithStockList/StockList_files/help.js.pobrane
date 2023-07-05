@@ -1,0 +1,183 @@
+// Open help window
+function openHelp(id)
+{
+    AJAX.onReady = function()
+    {
+        showHelpWindow(AJAX.getResponseXMLMap().get("help"));
+    }
+    AJAX.onError = function(message)
+    {
+        showHelpWindow(message);
+    }
+    AJAX.open("com.iv.ajax.HelpAjaxProvider");
+    var map = new XMLMap();
+    map.put("id", id);
+    AJAX.send(map);
+}
+var HELP_SEQUENCE = 0;
+function showHelpWindow(html)
+{
+    var wnd = new IV_Window();
+    var top = screen.height / 2 + document.body.scrollTop-100 + (HELP_SEQUENCE%4)*20;
+    var left = (screen.width) / 2 + document.body.scrollLeft-160+ (HELP_SEQUENCE%4)*20;
+    wnd.setAbsolutePosition(left, top);
+    wnd.setWidth(320);
+    wnd.setClosable(true);
+    wnd.setCaption("IVolatility.COM :: help");
+    wnd.setContentHTML(html);
+    wnd.setResizable(true);
+    wnd.setMoveMode("normal")
+    wnd.show();
+    HELP_SEQUENCE++;
+}
+
+var captionInfo = "IVolatility.COM :: info";
+function openInfo(id)
+{
+    var ws = WINDOWS_IV.findWindowsByCaption(captionInfo);
+    if (ws.length > 0){
+      return;
+      }
+
+    AJAX.onReady = function()
+    {
+        showInfoWindow(AJAX.getResponseXMLMap().get("help"));
+    }
+    AJAX.onError = function(message)
+    {
+        showInfoWindow(message);
+    }
+    AJAX.open("com.iv.ajax.HelpAjaxProvider");
+    var map = new XMLMap();
+    map.put("id", id);
+    AJAX.send(map);
+}
+function showInfoWindow(html)
+{
+    var wnd = new IV_Window();
+    var top = screen.height / 2 + document.body.scrollTop-100 + (HELP_SEQUENCE%4)*20;
+    var left = (screen.width) / 2 + document.body.scrollLeft-160+ (HELP_SEQUENCE%4)*20;
+    wnd.setAbsolutePosition(left, top);
+    wnd.setWidth(320);
+    wnd.setClosable(true);
+    wnd.setCaption(captionInfo);
+    wnd.setContentHTML(html);
+    wnd.setResizable(true);
+    wnd.setMoveMode("normal")
+    wnd.show();
+    HELP_SEQUENCE++;
+}
+
+
+function openSpreadHelp(id, page) {
+  var objWindow;
+  objWindow=window.open ('/help.j?help_id='+id.toLowerCase()+'&page='+page, '_blank', 'scrollbars=yes,status=no,width=450,height=150')
+  objWindow.Scroll="Yes";
+//  objWindow.focus();
+}
+
+function openBacktestingHelp(id, param) {
+  var objWindow;
+  objWindow=window.open ('/help.j?help_id='+id.toLowerCase()+'&param='+param, '_blank', 'scrollbars=yes,status=no,width=450,height=150')
+  objWindow.Scroll="Yes";
+//  objWindow.focus();
+}
+//Setting up cookie for nDays
+function SetCookie(cookieName,cookieValue,nDays) {
+ var today = new Date();
+ var expire = new Date();
+ if (nDays==null || nDays==0) nDays=1;
+ expire.setTime(today.getTime() + 3600000*24*nDays);
+ document.cookie = cookieName+"="+escape(cookieValue)
+                 + "; path=/; expires="+expire.toGMTString();
+}
+
+// reading cookie value
+function ReadCookie(cookieName) {
+ var theCookie=""+document.cookie;
+ var ind=theCookie.indexOf(cookieName);
+ if (ind==-1 || cookieName=="") return "";
+ var ind1=theCookie.indexOf(';',ind);
+ if (ind1==-1) ind1=theCookie.length;
+ return unescape(theCookie.substring(ind+cookieName.length+1,ind1));
+}
+
+/*function SetSection(nnSection) {
+  var nSection = nnSection;
+
+  if(eval("document.getElementById")==null)
+    return;
+
+
+  if(nnSection<0)
+    nSection = (-nnSection);
+
+  if(eval("document.getElementById('section"+(nnSection<0?"_":"")+nSection+"')")==null)
+    return;
+
+  var sections = ReadCookie('lSection');
+  var sectionVal = eval("document.getElementById('section"+(nnSection<0?"_":"")+nSection+"').style.display");
+  if(sections==null || sections.length<7 || sections.length>7)
+    sections = "1111111";
+
+  SetCookie( "lSection", sections.substring(0,nnSection+1)+(sectionVal==''?"1":"0")+sections.substring(nnSection+2), 30);
+  //alert(sections.substring(0,nnSection+1)+(sectionVal==''?"1":"0")+sections.substring(nnSection+2));
+}*/
+
+
+/*function restoreSections(itemSec) {
+  var sections = ReadCookie('lSection');
+  if(sections==null || sections.length<7 || sections.length>7)
+    sections = "1111111";
+
+  if(eval("document.getElementById")==null)
+    return;
+
+  if(itemSec==1) {
+    for(var i=1; i<sections.length; i++) {
+      if(eval("document.getElementById('section"+(i-1)+"')")==null)
+       continue;
+      eval("document.getElementById('section"+(i-1)+"').style.display="+(sections.charAt(i)=='1'?"''":"'none'"));
+    }
+  } else {
+      if(eval("document.getElementById('section_1')")==null)
+       return;
+      eval("document.getElementById('section_1').style.display="+(sections.charAt(i)=='1'?"''":"'none'"));
+  }
+
+} */
+
+function SetSection(CurrentSection) {
+	SetCookie("CurrentSection", CurrentSection);
+}
+
+function restoreSection() {
+	if(ReadCookie('CurrentSection')) {
+		var CurrentSection = ReadCookie('CurrentSection');
+	} else {
+		CurrentSection = 5;
+	}
+	ChooseSection(CurrentSection);
+}
+
+function isCookiesEnabled() {
+ // alert(document.cookie);
+  var sessionId = ReadCookie('STAT%5FUID');
+  if(sessionId == null || sessionId.length == 0) {
+        //openHelp('cookies_help');
+        document.location = '/login.j?cookies_disabled=true';
+        return false;
+  }
+  return true;
+}
+
+function ChooseSection(SectionId) {
+	SetSection(SectionId)
+	for(var i=1; i<6; i++) {
+		if(i==SectionId) {
+			eval("document.getElementById('section"+SectionId+"').style.display = 'block'");
+		} else {
+			eval("document.getElementById('section"+i+"').style.display = 'none'");
+		}
+    }
+}

@@ -1,0 +1,588 @@
+var WINDOWS_IV =
+{
+    MIN_WINDOW_WIDTH : 300,
+    MIN_WINDOW_HEIGHT : 50,
+    isIE :  null,
+    checkIE : function()
+    {
+        if (window.navigator.userAgent.indexOf("Opera") > 0) //Opera
+            return false;
+        if (window.navigator.userAgent.indexOf("Gecko") > 0) // (Mozilla, Netscape, FireFox)
+            return false;
+        if (window.navigator.userAgent.indexOf("MSIE") > 0)
+            return true;
+        return false;
+    },
+    wins : new Object(),
+    __sequence : 0,
+    __z_sequence : 1,
+    movedWindow  : null,
+    movedAction : null,
+    movedMouseX :0,
+    movedMouseY :0,
+    onLoadEvents : new Array(),
+
+    addOnLoadEvent: function(func)
+    {
+        WINDOWS_IV.onLoadEvents.push(func);
+    },
+
+    findWindowsByCaption : function(caption)
+    {
+        var ws = new Array();
+        for (var id in WINDOWS_IV.wins)
+        {
+            var wn = WINDOWS_IV.wins[id];
+            if (wn.getCaption() == caption)
+                ws.push(wn);
+        }
+        return ws;
+    },
+
+    documentMouseMove : document.onmousemove ? document.onmousemove : function()
+    {
+    } ,
+    documentMouseUp : document.onmouseup ? document.onmouseup : function()
+    {
+    } ,
+
+
+    onmousedown : function(event, id, action)
+    {
+        if (!event && window.event) event = window.event;
+        WINDOWS_IV.movedWindow = WINDOWS_IV.wins[id];
+        WINDOWS_IV.movedWindow.setZIndex(WINDOWS_IV.__z_sequence++);
+        var wnd = WINDOWS_IV.movedWindow;
+        wnd.showIframe(false);
+        var mode = wnd.getMoveMode();
+        if (mode == "transparent")
+        {
+            wnd.getWindowDiv().style.opacity = 0.5;
+            wnd.getWindowDiv().style.filter = "alpha(opacity=50)"
+        }
+        else if (mode == "hidden")
+        {
+            wnd.getHTMLDiv().style.visibility = "hidden";
+        }
+        else if (mode == "normal")
+        {
+            //do nothing
+        }
+
+        WINDOWS_IV.movedAction = action;
+        if (WINDOWS_IV.movedAction == "move")
+        {
+            WINDOWS_IV.movedMouseX = event.clientX + WINDOWS_IV.f_scrollLeft() -
+                                     parseInt(WINDOWS_IV.movedWindow.getLeft());
+            WINDOWS_IV.movedMouseY = event.clientY + WINDOWS_IV.f_scrollTop() -
+                                     parseInt(WINDOWS_IV.movedWindow.getTop());
+        } else   if (WINDOWS_IV.movedAction == "resize")
+        {
+            WINDOWS_IV.movedMouseX = event.clientX + WINDOWS_IV.f_scrollLeft() -
+                                     WINDOWS_IV.movedWindow.getWidth();
+            WINDOWS_IV.movedMouseY = event.clientY + WINDOWS_IV.f_scrollTop()
+                    - WINDOWS_IV.movedWindow.getHeight();
+        }
+        document.onmousemove = WINDOWS_IV.onmousemove;
+        document.onmouseup = WINDOWS_IV.onmouseup;
+        return false;
+    },
+
+    onmousemove : function(event)
+    {
+        if (!event && window.event) event = window.event;
+
+        if (WINDOWS_IV.movedWindow != null)
+        {
+            var style = WINDOWS_IV.movedWindow.style;
+            if (WINDOWS_IV.movedAction == "move")
+            {
+                WINDOWS_IV.movedWindow.setPosition(
+                        event.clientX + WINDOWS_IV.f_scrollLeft() - WINDOWS_IV.movedMouseX,
+                        event.clientY + WINDOWS_IV.f_scrollTop() - WINDOWS_IV.movedMouseY);
+
+            } else   if (WINDOWS_IV.movedAction == "resize")
+            {
+
+                var width = event.clientX + WINDOWS_IV.f_scrollLeft() - WINDOWS_IV.movedMouseX;
+                var height = event.clientY + WINDOWS_IV.f_scrollTop() - WINDOWS_IV.movedMouseY;
+                WINDOWS_IV.movedWindow.setSize(width, height);
+            }
+        }
+        WINDOWS_IV.documentMouseMove(event);
+    },
+
+    onmouseup : function(event)
+    {
+        var wnd = WINDOWS_IV.movedWindow;
+        if (wnd == null) return;
+        wnd.showIframe(true);
+        var mode = wnd.getMoveMode();
+        if (mode == "transparent")
+        {
+            wnd.getWindowDiv().style.opacity = 1;
+            wnd.getWindowDiv().style.filter = null;
+        }
+        else if (mode == "hidden")
+        {
+            wnd.getHTMLDiv().style.visibility = "visible";
+        }
+        else if (mode == "normal")
+        {
+            //do nothing
+        }
+        WINDOWS_IV.movedWindow = null;
+        WINDOWS_IV.documentMouseUp(event);
+        document.onmousemove = WINDOWS_IV.documentMouseMove;
+        document.onmouseup = WINDOWS_IV.documentMouseUp;
+    },
+
+    generateID : function()
+    {
+        return "iv_window_" + WINDOWS_IV.__sequence++;
+    },
+
+    f_scrollLeft : function ()
+    {
+        return WINDOWS_IV.f_filterResults(
+                window.pageXOffset ? window.pageXOffset : 0,
+                document.documentElement ? document.documentElement.scrollLeft : 0,
+                document.body ? document.body.scrollLeft : 0
+                );
+    },
+
+    f_scrollTop: function()
+    {
+        return WINDOWS_IV.f_filterResults(
+                window.pageYOffset ? window.pageYOffset : 0,
+                document.documentElement ? document.documentElement.scrollTop : 0,
+                document.body ? document.body.scrollTop : 0
+                );
+    },
+
+    f_filterResults : function(n_win, n_docel, n_body)
+    {
+        var n_result = n_win ? n_win : 0;
+        if (n_docel && (!n_result || (n_result > n_docel)))
+            n_result = n_docel;
+        return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
+    },
+
+    init : function()
+    {
+        WINDOWS_IV.isIE = WINDOWS_IV.checkIE();
+        document.onmousemove = WINDOWS_IV.onmousemove;
+        document.onmouseup = WINDOWS_IV.onmouseup;
+        var divs = document.getElementsByTagName("DIV");
+        for (var i = 0; i < divs.length; i++)
+        {
+            var name = divs[i].getAttribute("name");
+            if (name != null && name.indexOf("iv_window") >= 0)
+            {
+
+                var html = divs[i].innerHTML;
+                divs[i].innerHTML = "";
+                var w = new IV_Window();
+                w.setContentHTML(html);
+                w.setSrcElement(divs[i]);
+
+                if (name.match(/^iv_window\|(.+)\|$/gm))
+                {
+                    var str = RegExp.$1;
+                    var arr = str.split(";");
+                    for (var j = 0; j < arr.length; j++)
+                    {
+                        var pair = arr[j].split("=");
+                        if (pair.length == 2)
+                            w.setProperty(pair[0], pair[1]);
+                        w.setProperty(pair[0], pair[1]);
+                    }
+                }
+                w.show();
+            }
+        }
+        for (var i = 0; i < WINDOWS_IV.onLoadEvents.length; i++)//events
+        {
+            WINDOWS_IV.onLoadEvents[i]();
+        }
+    },
+    runInit : function()
+    {
+        var oldonload = window.onload;
+        if (document.addEventListener &&
+            window.navigator.userAgent.indexOf("Gecko") > 0)//firefox
+        {
+            document.addEventListener("DOMContentLoaded", WINDOWS_IV.init, false);
+        }
+        else if (typeof window.onload != 'function')
+        {
+            window.onload = WINDOWS_IV.init;
+        } else
+        {
+            window.onload = function()
+            {
+                if (oldonload) oldonload();
+                WINDOWS_IV.init();
+            }
+        }
+    },
+
+    showWindow : function(id)
+    {
+        WINDOWS_IV.wins[id].onMinimizeButton();
+    },
+
+    closeWindow : function(id)
+    {
+        WINDOWS_IV.wins[id].close();
+        delete WINDOWS_IV.wins[id];
+    }
+}
+
+WINDOWS_IV.runInit();
+
+function IV_Window()
+{
+    this.path = "/design/images/windows_iv/modern/"
+    this.windowDiv = document.createElement("div");
+    this.contentDiv = null;
+    this.htmlDiv = null;
+
+    this.id = WINDOWS_IV.generateID();
+    WINDOWS_IV.wins[this.id] = this;
+    this.buttons = new Array();
+    this.caption = "Window";
+    this.contentHTML = "";
+    this.contentElement = null;
+    this.move_mode = "hidden";
+    this.position = "relative";
+    this.left = 0;
+    this.top = 0;
+    this.width = "100%";
+    this.height = null;
+    this.help = "";
+    this.srcElement = null;
+    this.closable = false;
+    this.resizable = false;
+    this.minimizable = true;
+    this.movable = true;
+    this.init = false;
+}
+
+IV_Window.prototype.show = function()
+{
+    this.windowDiv.setAttribute("id", this.id);
+    if (this.minimizable)
+        this.addButton("minimize.gif", 21, "WINDOWS_IV.showWindow('" + this.id + "')",
+                "minimize", "minimize_button");
+    if (this.closable)
+        this.addButton("close.gif", 21, "WINDOWS_IV.closeWindow('" + this.id + "')",
+                "close", "close_button");
+    var html =
+            (WINDOWS_IV.isIE ?
+             '<iframe id="' + this.id + 'iframe" src="about:blank" style="display:none;display:block;position:absolute;' +
+             'top:0;left:0;z-index:-1;filter:mask();width:1px;height:1px;"></iframe>' : "") +
+            '<table onselectstart="return false;" style="' + (this.movable ? 'cursor:move;' : '') +
+            'width:100%;border-width:0 0 0 0;background-image:url(' + this.path + 'background.gif);"' +
+            (this.movable ? 'onmousedown="return WINDOWS_IV.onmousedown(event,\'' + this.id + '\',\'move\');" ' : '') +
+            'cellspacing="0px" cellpadding="0px">' +
+            '<tr valign="middle">' +
+            '<td width="5px">' +
+            '<img src="' + this.path + 'left.gif" alt=""/>' +
+            '</td>' +
+            '<td valign="center">' +
+            '<nobr><span class="s3" id="caption' + this.id + '">' + this.help + this.caption + '</span><nobr>' +
+            '</td>';
+    for (var i = 0; i < this.buttons.length; i++)
+    {
+        var bt = this.buttons[i];
+        html += '</td>' + '<td width="' + bt.width + 'px"><a href="#" onclick="">' +
+                '<img  border="0" id="' + bt.id + this.id + '" onclick="' + bt.script + ';return false;" src="' +
+                this.path + bt.image + '" alt="' + bt.alt + '"/>' + '</a></td>'
+    }
+    html += '<td width="5px"><img src="' + this.path + 'right.gif" alt=""/></td></tr></table>' +
+            '<div id="content' + this.id + '">' +
+            '<table style="width:100%;height:100%;border-bottom:1px solid gray;background-color:white;' +
+            'border-left:1px solid gray;border-right:1px solid gray;" cellpadding=0px cellspacing=0>' +
+            '<tr><td colspan=2>' +
+            '<div style="overflow:auto;padding:1px 2px 1px 2px;border:0 0 0 0;" id="html' + this.id + '">' +
+            this.contentHTML + '</div></td></tr>' +
+            (this.resizable ?
+             '<tr style="height:18px;"><td></td><td  align=right><div  onmousedown="return WINDOWS_IV.onmousedown(event,\'' +
+             this.id + '\',\'resize\');" style="cursor:nw-resize;width:18px;height:18px;background-image:url(' +
+             this.path + 'resize.gif);"></div></td></tr>' : '') + '</table></div>';
+    this.windowDiv.innerHTML = html;
+    this.windowDiv.style.position = this.position;
+    this.windowDiv.style.display = "block";
+    this.windowDiv.style.left = this.left;
+    this.windowDiv.style.top = this.top;
+    this.windowDiv.style.width = this.width;
+    if (this.srcElement != null)
+    {
+        this.srcElement.parentNode.insertBefore(this.windowDiv, this.srcElement);
+        this.srcElement.parentNode.removeChild(this.srcElement);
+    } else
+    {
+        document.body.appendChild(this.windowDiv);
+    }
+    this.contentDiv = document.getElementById("content" + this.id);
+    this.htmlDiv = document.getElementById("html" + this.id);
+    this.init = true;
+    this.setZIndex(WINDOWS_IV.__z_sequence++);
+    this.iframe = document.getElementById(this.id + "iframe");
+    this.showIframe(true);
+}
+
+
+IV_Window.prototype.setCaption = function(caption)
+{
+    this.caption = caption;
+    if (this.init)
+    {
+        document.getElementById('caption' + this.id).innerHTML = this.help + caption;
+    }
+}
+
+IV_Window.prototype.getCaption = function()
+{
+    return this.caption;
+}
+
+IV_Window.prototype.addButton = function(image, width, script, alt, id)
+{
+    var button = new Object();
+    button.image = image;
+    button.width = width;
+    button.script = script;
+    button.alt = alt;
+    button.id = id;
+    this.buttons.push(button);
+}
+IV_Window.prototype.setPosition = function(left, top)
+{
+    this.left = left;
+    this.top = top;
+    if (this.init)
+    {
+        this.getWindowDiv().style.left = left;
+        this.getWindowDiv().style.top = top;
+    }
+}
+
+IV_Window.prototype.setAbsolutePosition = function(left, top)
+{
+    this.position = "absolute";
+    this.left = left;
+    this.top = top;
+}
+IV_Window.prototype.getLeft = function()
+{
+    return this.left;
+}
+
+IV_Window.prototype.getTop = function()
+{
+    return this.top;
+}
+
+
+IV_Window.prototype.setWidth = function(width)
+{
+    this.width = width;
+    if (this.init)
+    {
+        this.getWindowDiv().style.width = width;
+        this.getHTMLDiv().style.width = width - 8;
+        this.showIframe(true);
+    }
+}
+IV_Window.prototype.setSize = function(width, height)
+{
+    this.width = width;
+    this.height = height;
+    var buttons_width = 0;
+    for (var i = 0; i < this.buttons.length; i++)
+        buttons_width += this.buttons[i].width;
+    if (this.init)
+    {
+        if (width > document.getElementById('caption' + this.id).offsetWidth + 30 +
+                    buttons_width)
+        {
+            this.getWindowDiv().style.width = width;
+            this.getHTMLDiv().style.width = width - 8;
+        }
+        if (height > 100)
+        {
+            if (!WINDOWS_IV.isIE) height += 12;
+            this.getWindowDiv().style.height = height - 45;
+            this.getHTMLDiv().style.height = height - 63;
+        }
+        this.showIframe(true);
+    }
+}
+
+IV_Window.prototype.setCenteredsize = function(width, height)
+{
+    var top = (screen.height - height) / 2 + document.body.scrollTop;
+    var left = (screen.width - width) / 2 + document.body.scrollLeft;
+    this.setAbsolutePosition(left, top);
+    this.setSize(width, height);
+}
+
+IV_Window.prototype.getWidth = function()
+{
+    this.width = this.getWindowDiv().offsetWidth;
+    return this.width;
+}
+IV_Window.prototype.getHeight = function()
+{
+    this.height = this.getWindowDiv().offsetHeight;
+    return this.height;
+}
+
+IV_Window.prototype.getWindowDiv = function()
+{
+    return this.windowDiv;
+}
+
+IV_Window.prototype.getContentDiv = function()
+{
+    return this.contentDiv;
+}
+
+IV_Window.prototype.getHTMLDiv = function()
+{
+    return this.htmlDiv;
+}
+
+IV_Window.prototype.getContentHTML = function()
+{
+    return this.contentHTML;
+}
+
+IV_Window.prototype.setContentHTML = function(contentHTML)
+{
+    this.contentHTML = contentHTML;
+    if (this.init)
+    {
+        this.getHTMLDiv().innerHTML = contentHTML;
+    }
+}
+
+IV_Window.prototype.setSrcElement = function(srcElement)
+{
+    this.srcElement = srcElement;
+}
+
+IV_Window.prototype.setZIndex = function(zIndex)
+{
+    this.getWindowDiv().style.zIndex = zIndex;
+}
+
+IV_Window.prototype.onMinimizeButton = function()
+{
+    var image = document.getElementById("minimize_button" + this.id)
+    var style = this.getContentDiv().style;
+    if (style.display == 'none')
+    {
+        image.src = this.path + "minimize.gif"
+        image.alt = "minimize";
+        style.display = 'block';
+        this.showIframe(true);
+    } else
+    {
+        image.src = this.path + "maximize.gif"
+        image.alt = "maximize";
+        style.display = 'none';
+        this.showIframe(false);
+    }
+}
+
+IV_Window.prototype.setHelpID = function(id)
+{
+    this.help = '<a href="javascript:openHelp(' + id
+            + ')" alt="Open Help"><img src="/design/images/ico/q_zn.gif" width="10" height="11" border="0" alt="Open Help"/></a>&nbsp;'
+}
+
+IV_Window.prototype.setClosable = function(isClosable)
+{
+    this.closable = isClosable;
+}
+
+IV_Window.prototype.setMinimizable = function(isMinimizable)
+{
+    this.minimizable = isMinimizable;
+}
+
+IV_Window.prototype.setMovable = function(isMovable)
+{
+    this.movable = isMovable;
+}
+
+IV_Window.prototype.close = function()
+{
+    this.windowDiv.parentNode.removeChild(this.windowDiv);
+}
+
+//move_mode : hidden (default)|transparent|normal
+IV_Window.prototype.getMoveMode = function()
+{
+    return this.move_mode;
+}
+
+IV_Window.prototype.setMoveMode = function(move_mode)
+{
+    this.move_mode = move_mode;
+}
+
+IV_Window.prototype.setResizable = function(isResizable)
+{
+    this.resizable = isResizable;
+}
+
+IV_Window.prototype.showIframe = function(isShowed)
+{
+    if (!WINDOWS_IV.isIE) return;
+    var style = this.iframe.style;
+    if (isShowed)
+    {
+        style.width = this.getWidth();
+        style.height = this.getHeight();
+    } else
+    {
+        style.width = 0;
+        style.height = 0;
+    }
+}
+IV_Window.prototype.showGraph = function(title, url, pic_width, pic_height, error_message)
+{
+    if(arguments.length == 4)  error_message = "No data available."
+    this.setCaption(title);
+    this.setCenteredsize(pic_width + 20, pic_width + 70);
+    this.setClosable(true);
+    this.setContentHTML("<span id='graph" + this.id +
+                       "'><img onerror='document.getElementById(\"graph" + this.id +
+                       "\").innerHTML = \""+error_message+"\";' border='0' src='" + url + "'/></span>");
+    this.setMoveMode("transparent");
+    this.show();
+    this.setSize(pic_width + 20, pic_height + 70);
+}
+
+/*
+name: String
+width : CSS atribure
+help_id : int
+move_mode : hidden (default)|transparent|normal
+resizable : true|false(default)
+*/
+IV_Window.prototype.setProperty = function(name, value)
+{
+    if (name == "name") this.setCaption(value);
+    else  if (name == "help_id") this.setHelpID(value);
+    if (name == "resizable")
+    {
+        if (value = "true") this.resizable = true;
+        else this.resizable = false;
+    }
+    else this[name] = value;
+}

@@ -1,0 +1,194 @@
+var currentLocation = window.location.pathname;
+var parameters = window.location.search;
+var element = document.getElementById('block_description');
+var isNotFound = false;
+switch (currentLocation) {
+    case '/futures_data.j': {
+        element.innerHTML = 'IVol Futures';
+        break;
+    }
+    case '/futures_options.j': {
+        element.innerHTML = 'IVol Futures';
+        break;
+    }
+    case '/futures_calculator/': {
+        element.innerHTML = 'IVol Futures';
+        break;
+    }
+    case '/adv_iv/futranker.j': {
+        element.innerHTML = 'IVol Futures';
+        break;
+    }
+    case '/adv_hv/futranker.j' : {
+        element.innerHTML = 'IVol Futures';
+        break;
+    }
+    case '/data/data_download_intro.html': {
+        element.innerHTML = 'Data Tools';
+        break;
+    }
+    case '/daily_download.j': {
+        element.innerHTML = 'Data Tools';
+        break;
+    }
+    case '/data_download.j': {
+        element.innerHTML = 'Data Tools';
+        break;
+    }
+    case '/data_download_history.j': {
+        element.innerHTML = 'Data Tools';
+        break;
+    }
+    case '/iv_sdk.j': {
+        element.innerHTML = 'Data Tools';
+        break;
+    }
+    case '/adv_options.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/manage_favourites.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/sentiment_finder.j': {
+        if (parameters.includes('smid=.2.2.16.1')) {
+            element.innerHTML = 'Underlying Sentiment Analyzer';
+        } else {
+            element.innerHTML = 'Analytical Tools';
+        }
+        break;
+
+
+    }
+    case '/strategist.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/ivgraph2.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/adv_hist_data/ivx.j': {
+        if (parameters.includes('smid=.3.2.17.1')) {
+            element.innerHTML = 'Historical Data Charts';
+        } else {
+            element.innerHTML = 'Analytical Tools';
+        }
+        break;
+    }
+    case '/stock-monitor.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/interactive-options-chain.j': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/info/ivxm_free.html': {
+        element.innerHTML = 'Analytical Tools';
+        break;
+    }
+    case '/adv_calc/calc.j': {
+        element.innerHTML = 'Calculators';
+        break;
+    }
+    case '/custom/pbc2/calc.j': {
+        element.innerHTML = 'Calculators';
+        break;
+    }
+    case '/pnlcalculator/plc.j': {
+        element.innerHTML = 'Calculators';
+        break;
+    }
+    case '/adv_iv/ranker.j': {
+        if (parameters.includes('smid=.3.5.1')) {
+            element.innerHTML = 'Underlying Volatility Ranker';
+        } else {
+            element.innerHTML = 'Scanning Tools';
+        }
+        break;
+    }
+    case '/spread2/scanner.j': {
+        element.innerHTML = 'Scanning Tools';
+        break;
+    }
+    case '/strategy_service.j': {
+        element.innerHTML = 'Scanning Tools';
+        break;
+    }
+    case '/rtservice.j': {
+        element.innerHTML = 'Scanning Tools';
+        break;
+    }
+    case '/eda.j': {
+        element.innerHTML = 'Scanning Tools';
+        break;
+    }
+    case '/simple-strategy-scanner.j': {
+        element.innerHTML = 'Scanning Tools';
+        break;
+    }
+    case '/adv_hist_data/hv.j': {
+        element.innerHTML = 'Historical Data Charts';
+        break;
+    }
+    case '/adv_hist_data/cb.j': {
+        element.innerHTML = 'Historical Data Charts';
+        break;
+    }
+    case '/adv_hist_data/sk.j': {
+        element.innerHTML = 'Historical Data Charts';
+        break;
+    }
+    case '/sentiment.j': {
+        element.innerHTML = 'Underlying Sentiment Analyzer';
+        break;
+    }
+    case '/npwa/strategist.j': {
+        element.innerHTML = 'Simple Strategy Analyzer';
+        break;
+    }
+    case '/ccwa/strategist.j': {
+        element.innerHTML = 'Simple Strategy Analyzer';
+        break;
+    }
+    case '/mppa/strategist.j': {
+        element.innerHTML = 'Simple Strategy Analyzer';
+        break;
+    }
+    case '/collar/collar_calc.j': {
+        element.innerHTML = 'Simple Strategy Analyzer';
+        break;
+    }
+    case '/put-scanners/result.j': {
+        element.innerHTML = 'Simple Strategy Scanner';
+        break;
+    }
+    case '/put-scanners/scores.j.result': {
+        element.innerHTML = 'Simple Strategy Scanner';
+        break;
+    }
+    case '/call-scanners/result.j': {
+        element.innerHTML = 'Simple Strategy Scanner';
+        break;
+    }
+    case '/call-scanners/scores.j.result': {
+        element.innerHTML = 'Simple Strategy Scanner';
+        break;
+    }
+    case '/adv_hv/ranker.j': {
+        element.innerHTML = 'Underlying Volatility Ranker';
+        break;
+    }
+    case '/adv_cpivx/ranker.j': {
+        element.innerHTML = 'Underlying Volatility Ranker';
+        break;
+    }
+    case '/adv_corr/ranker.j': {
+        element.innerHTML = 'Underlying Volatility Ranker';
+        break;
+    }
+
+}
+                   

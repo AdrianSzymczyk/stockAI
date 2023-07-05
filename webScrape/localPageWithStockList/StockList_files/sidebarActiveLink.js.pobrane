@@ -1,0 +1,84 @@
+var currentLocation = window.location.pathname;
+
+if (currentLocation === '/personal_info.j' || currentLocation === '/billing_details.j' || currentLocation === '/billing_history.j'
+    || currentLocation === '/subscriptions.j') {
+    highlightLink('accountdetails', 'account-details-link', "url('/design/images/account-filled-25.png')");
+}
+if (currentLocation === '/dashboard.j') {
+    highlightLink('dashboard', 'dashboard-link', "url('/design/images/speed-25 (1).png')");
+}
+if (currentLocation === '/data/help.html') {
+    highlightLink('help-page', 'help-link', "url('/images/sidebar-help-page-active.svg')");
+}
+if (currentLocation === '/iv-live.j') {
+    highlightLink('ivollive', 'ivollive-link', "url('/design/images/IVolLive2.png')");
+}
+if (currentLocation.indexOf('put-scanners/scores.j') !== -1 || currentLocation === '/put-scanners/result.j') {
+    highlightLink('strategyScanner', 'strategy-scanner-link2', "url('/design/images/Strategy_Scanner_00AE80.png')");
+}
+if (currentLocation === '/sentiment_finder.j') {
+    highlightLink('sentimentAnalyzer', 'sentimentanalyzer-link', "url('/design/images/Sentiment Analyzer2.png')");
+}
+if (currentLocation === '/npwa/strategist.j') {
+    highlightLink('strategyAnalyzer', 'strategyanylazer-link', "url('/design/images/Strategy Analyzer2.png')");
+}
+if (currentLocation === '/adv_hist_data/ivx.j') {
+    highlightLink('historicalData', 'historical-data-charts-link', "url('/design/images/Historical Data Charts.png')");
+}
+if (currentLocation === '/adv_iv/ranker.j') {
+    highlightLink('volatilityRanker', 'volatility-ranker-link', "url('/design/images/Volatility Ranker2.png')");
+}
+if (currentLocation === '/spread2/scanner.j') {
+    highlightLink('spreadScanner', 'strategy-scanner-link', "url('/design/images/Options_Scanner_00AE80.png')");
+}
+if (currentLocation === '/strategy_service.j') {
+    highlightLink('rtSpreadScanner', 'rt-spread-scanner-link', "url('/design/images/Spread_Scanner_00AE80.png')");
+}
+if (currentLocation === '/rtservice.j') {
+    highlightLink('optionsScanner', 'rt-options-scanner-link', "url('/design/images/Options_Scanner_00AE80.png')");
+}
+if (currentLocation === '/home.asp') {
+    highlightLink('correlationTrading', 'correlation-trading-link', "url('/design/images/Correlation Trading2.png')");
+}
+if (currentLocation === '/adv_calc/calc.j') {
+    highlightLink('optionsCalculator', 'options-calculator-link', "url('/design/images/Options Calc2.png')");
+}
+if (currentLocation === '/pnlcalculator/plc.j') {
+    highlightLink('pnlCaclulator', 'pnl-calculator-link', "url('/design/images/PnL Calc2.png')");
+}
+if (currentLocation === '/futures_data.j') {
+    highlightLink('futuresOptions', 'futures-options-link2', "url('/design/images/Futures Options2.png')");
+}
+if (currentLocation === '/adv_iv/futranker.j') {
+    highlightLink('futuresRanker', 'futures-options-link', "url('/design/images/Futures Ranker2.png')");
+}
+if (currentLocation === '/data_download.j') {
+    highlightLink('dataDownload', 'data-download-link', "url('/design/images/Data Download2.png')");
+}
+if (currentLocation === '/daily_download.j') {
+    highlightLink('updatesWizard', 'updates-wizard-link', "url('/design/images/Updates Wizard2.png')");
+}
+if (currentLocation === '/matrix_opt.j') {
+    highlightLink('matrixData', 'option-data-matrix-link', "url('/design/images/Option Matrix Data2.png')");
+}
+if (currentLocation === '/adv_options.j') {
+    highlightLink('advancedOptions', 'advanced-options-link', "url('/design/images/Advanced Options2.png')");
+}
+if (currentLocation === '/custom/pbc2/calc.j') {
+    highlightLink('probabilityCalculator', 'probability-calculator-link', "url('/design/images/Prob Calc2.png')");
+}
+
+
+
+function highlightLink(backgroundClass, linkClass, imageUrl) {
+    let background = document.getElementsByClassName(backgroundClass);
+    let link = document.getElementsByClassName(linkClass);
+    if (background.length > 0) {
+        background[0].style.backgroundColor = 'black';
+        background[1].style.backgroundColor = 'black';
+        link[0].style.color = 'white';
+        link[1].style.color = 'white';
+        link[0].style.backgroundImage = imageUrl;
+        link[1].style.backgroundImage = imageUrl;
+    }
+}

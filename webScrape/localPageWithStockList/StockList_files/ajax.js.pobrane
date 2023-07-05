@@ -1,0 +1,344 @@
+/*
+AJAX class is  supported in IE 5+, Opera 8.01+, Mozilla 1.0 / Firefox
+*/
+
+function Ajax()
+{
+    this.count = 0;
+    this.requests = new Array();
+    this.__url = document.URL
+}
+
+/*
+@param provider specified Java class and method to handle AJAX request.
+e.g. 'com.egar.AjaxProviderImpl.someMethod()'
+*/
+Ajax.prototype.open = function(provider)
+{
+    this.count++;
+    try
+    {
+        var request = null;
+        if (window.XMLHttpRequest)
+            request = new XMLHttpRequest()
+        else if (window.ActiveXObject)
+            try
+            {
+                request = new ActiveXObject("Msxml2.XMLHTTP");
+            } catch(e)
+            {
+                request = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        this.__xmlreq = request;
+        this.__ajax_provider = provider;
+        var obj = new Object();
+        obj["request"] = request;
+        obj["onReady"] = AJAX.onReady;
+        this.requests.push(obj);
+        request.onreadystatechange = new Function(
+                "{" +
+                "   AJAX.__xmlreq = AJAX.requests[" + (this.requests.length - 1) + "].request;" +
+                "   try" +
+                "   {  " +
+                "       if (AJAX.__xmlreq.readyState == 4)" +
+                "       {" +
+                "           if (AJAX.__xmlreq.status == 200)" +
+                "           {     " +
+                "               AJAX.requests[" + (this.requests.length - 1) + "].onReady(); " +
+                "               AJAX.requests[" + (this.requests.length - 1) + "] = null; " +
+                "           } " +
+                "           else throw new Error("+
+                "                AJAX.__xmlreq.statusText);" +
+                "           AJAX.count--; " +
+                "       }" +
+                "   } catch(e)" +
+                "   {" +
+                "       AJAX.__onError(e.message);" +
+                "   }" +
+                "}"
+                );
+
+
+    } catch (e)
+    {
+        this.__onError("AJAX is not supported in your browser.\n" +
+                       "Supported browsers: IE 5+, Opera 8.01+, Mozilla 1.0 / Firefox\n" +
+                       "Error description: " + e.message);
+    }
+
+    try
+    {
+        this.__xmlreq.open("POST",
+                this.__url + "?" + new Date().getTime().toString(), true);
+    } catch(e)
+    {
+        this.__onError("AJAX.open() error: " + e.message);
+    }
+}
+
+Ajax.prototype.setURL = function(newurl)
+
+{
+
+    this.__url = newurl;
+}
+
+/*
+Send AJAX request, result must be handled in onReady method
+@param xml - xml as text string or XMLMap object
+*/
+Ajax.prototype.send = function(xml)
+{
+    try
+    {
+        this.__xmlreq.setRequestHeader("ajax_provider", this.__ajax_provider.toString());
+        var str = xml.toString();
+        this.__xmlreq.send(str);
+    } catch(e)
+    {
+        this.__onError("Ajax.send() error: " + e.message);
+    }
+}
+
+Ajax.prototype.onReady = function()
+{
+    alert("Ovveride AJAX.onReady method!");
+}
+
+/*
+Override this method if you need custom error handling
+*/
+Ajax.prototype.onError = function(description)
+{
+    alert(description);
+}
+
+Ajax.prototype.__onError = function(description)
+{
+    this.count--;
+    this.onError(description);
+}
+
+/*
+Returns the response as XML.
+This property returns an XML document object,
+which can be examined and parsed using
+W3C DOM node tree methods and properties
+*/
+Ajax.prototype.getResponseXML = function()
+{
+    return this.__xmlreq.responseXML;
+}
+
+/*
+Returns the response as a string
+*/
+Ajax.prototype.getResponseText = function()
+{
+    return this.__xmlreq.responseText;
+}
+
+Ajax.prototype.getResponseXMLMap = function()
+{
+    var map = new XMLMap();
+    map.loadFromXML(AJAX.getResponseText());
+    return map;
+}
+
+
+var AJAX = new Ajax();
+
+
+/*
+XMLMapClass
+*/
+function XMLMap()
+{
+    this.__map = new Object();
+}
+
+XMLMap.prototype.put = function(key, value)
+{
+    var old_val = this.get(key.toString());
+    this.__map[key.toString()] = value.toString();
+    return old_val;
+}
+
+XMLMap.prototype.get = function(key)
+{
+    var val = this.__map[key.toString()];
+    if (val == undefined) return null;
+    return val.toString();
+}
+
+XMLMap.prototype.loadFromXML = function(xml)
+{
+    var impl = new DOMImplementation();
+    var doc = impl.loadXML(xml.toString());
+    var els = doc.getDocumentElement().getElementsByTagName("entry");
+    var l = els.getLength();
+    for (var i = 0; i < l; i++)
+    {
+        var node = els.item(i);
+        var key = node.getAttribute("key");
+        this.__map[key] = node.getAttribute("value");
+    }
+}
+
+XMLMap.prototype.toString = function()
+{
+    var impl = new DOMImplementation();
+    var doc = impl.loadXML("<root></root>");
+    for (var key in this.__map)
+    {
+        var value = this.__map[key];
+        var node = doc.createElement("entry");
+        doc.getDocumentElement().appendChild(node)
+        node.setAttribute("key", key);
+        node.setAttribute("value", value);
+    }
+    return doc.toString();
+}
+
+XMLMap.prototype.getXMLMap = function()
+{
+    return this.__map;
+}
+
+XMLMap.prototype.loadFromForm = function()
+{
+    for (var i = 0; i < arguments.length; i++)
+    {
+        this.put(arguments[i], FORM_UTILS.getElementValue(arguments[i]));
+    }
+
+}
+
+XMLMap.prototype.loadToForm = function(id)
+{
+    for (var i = 0; i < arguments.length; i++)
+    {
+        FORM_UTILS.setElementValue(arguments[i], this.get(arguments[i]));
+    }
+
+}
+
+XMLMap.prototype.getArray = function(name)
+{
+    var num = parseInt(this.get(name + ".length"));
+    var arr = new Array(num);
+    for (var i = 0; i < num; i++)
+    {
+        arr[i] = this.get(name + "." + i);
+    }
+    return arr;
+}
+/*
+*FORM_UTILS object
+*/
+var FORM_UTILS =
+{
+    getElementValue : function(id)
+    {
+        var elem = document.getElementById(id)
+        var tag = elem.tagName.toUpperCase();
+        switch (tag)
+                {
+            case "TEXTAREA":
+                return elem.value;
+            case "INPUT":
+            {
+                var type = elem.getAttribute("type").toUpperCase();
+                if (type == "CHECKBOX") return elem.checked;
+                if (type == "RADIO")  alert("Radio not implemented yet!"); //todo implement
+                return elem.value;
+            }
+            case "SELECT":
+                return elem.options[elem.selectedIndex].text;
+
+        }
+    },
+
+    setElementValue : function(id, value)
+    {
+        var elem = document.getElementById(id)
+        var tag = elem.tagName.toUpperCase();
+        switch (tag)
+                {
+            case "TEXTAREA":
+            {
+                elem.value = value;
+                break;
+            }
+            case "INPUT":
+            {
+                var type = elem.getAttribute("type").toUpperCase();
+                if (type == "CHECKBOX") elem.checked = value == "true";
+                else if (type == "RADIO")  alert("Radio not implemented yet!"); //todo implement
+                else elem.value = value;
+                break;
+            }
+            case "SELECT":
+            {
+                for (var i = 0; i < elem.options.length; i++)
+                    if (elem.options[i].text == value)
+                    {
+                        elem.selectedIndex = i;
+                        break;
+                    }
+                break;
+            }
+            default: break;
+        }
+    },
+
+    showElement : function(id)
+    {
+        for (var i = 0; i < arguments.length; i++)
+        {
+            var el = document.getElementById(arguments[i])
+            if (el != null) el.style.visibility = "visible";
+        }
+    },
+
+    hideElement : function(id)
+    {
+        for (var i = 0; i < arguments.length; i++)
+        {
+            var el = document.getElementById(arguments[i])
+            if (el != null) el.style.visibility = "hidden";
+        }
+    },
+
+    setSelectOptions :function(select_id, optionsArray, selectedIndex)
+    {
+        var select = document.getElementById(select_id);
+        select.innerHTML = "";
+        for (var i = 0; i < optionsArray.length; i++)
+        {
+            var opt = document.createElement("OPTION");
+            opt.text = optionsArray[i];
+            select.options.add(opt);
+        }
+        if (selectedIndex != null && optionsArray.length > 1)
+            select.selectedIndex = selectedIndex;
+    },
+
+    increment : function(id, value)
+    {
+        var el = document.getElementById(id);
+        var el_value = el.value;
+        var v = parseFloat(el_value);
+        if (!isNaN(v))
+        {
+            v += value;
+            var arr = v.toString().split(".");
+            if (arr.length > 1 && arr[1].length > 4)
+            {
+                arr[1] = arr[1].substr(0, 4);
+                v = arr[0] + "." + arr[1];
+            }
+            el.value = v.toString();
+        }
+    }
+}

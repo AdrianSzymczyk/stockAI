@@ -1,0 +1,239 @@
+
+    function getParam(p) {
+var match = RegExp('[?&]' + p + '=([^&]*)').exec(window.location.search);
+return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function getExpiryRecord(value) {
+var expiryPeriod = 90 * 24 * 60 * 60 * 1000;
+
+var expiryDate = new Date().getTime() + expiryPeriod;
+return {
+value: value,
+expiryDate: expiryDate
+};
+}
+
+function addGclid() {
+var gclidParam = getParam('gclid');
+var gclidFormFields = ['gclid_field'];
+var gclidRecord = null;
+var currGclidFormField;
+
+var gclsrcParam = getParam('gclsrc');
+var isGclsrcValid = !gclsrcParam || gclsrcParam.indexOf('aw') !== -1;
+
+gclidFormFields.forEach(function (field) {
+if (document.getElementById(field)) {
+currGclidFormField = document.getElementById(field);
+}
+});
+
+if (gclidParam && isGclsrcValid) {
+gclidRecord = getExpiryRecord(gclidParam);
+localStorage.setItem('gclid', JSON.stringify(gclidRecord));
+}
+
+var gclid = gclidRecord || JSON.parse(localStorage.getItem('gclid'));
+var isGclidValid = gclid && new Date().getTime() < gclid.expiryDate;
+
+if (currGclidFormField && isGclidValid) {
+currGclidFormField.value = gclid.value;
+}
+}
+
+window.addEventListener('load', addGclid);
+
+
+
+if (window.localStorage.getItem('sidebar_state_hidden')) {
+    hideSidebar();
+} else {
+    showSidebar();
+}
+
+
+function changeSidebar() {
+    var sidebarWidth = document.getElementsByClassName('sidebar')[0].clientWidth;
+    if (sidebarWidth == '90') {
+        hideSidebar();
+    }
+    if (sidebarWidth == '40') {
+        showSidebar();
+        removeSidebarState();
+    }
+}
+
+function saveSidebarState() {
+    window.localStorage.setItem('sidebar_state_hidden', true);
+}
+
+function removeSidebarState() {
+    window.localStorage.removeItem('sidebar_state_hidden');
+}
+
+function hideSidebar() {
+    var sidebarIvlive = document.getElementsByClassName('sidebar-ivlive');
+    var sidebarOpen = document.getElementsByClassName('sidebar-open')[0];
+    var sidebarHidden = document.getElementsByClassName('sidebar-hidden')[0];4
+    if(sidebarIvlive[0]){
+        sidebarIvlive[0].style.width = '40px';
+    }
+    if (sidebarOpen != null && sidebarHidden != null) {
+        var sidebar = document.getElementsByClassName('sidebar')[0];
+        sidebarOpen.style.display = 'none';
+        sidebarHidden.style.display = 'block';
+        sidebar.style.width = '40px';
+        saveSidebarState();
+    }
+}
+
+function showSidebar() {
+    var sidebarIvlive = document.getElementsByClassName('sidebar-ivlive');
+    var sidebar = document.getElementsByClassName('sidebar')[0];
+    var sidebarOpen = document.getElementsByClassName('sidebar-open')[0];
+    var sidebarHidden = document.getElementsByClassName('sidebar-hidden')[0];
+    if(sidebarIvlive[0]){
+        sidebarIvlive[0].style.width = '90px';
+    }
+    if (sidebarOpen != null && sidebarHidden != null) {
+        sidebar.style.width = '90px';
+        sidebarOpen.style.display = 'block';
+        sidebarHidden.style.display = 'none';
+    }
+}
+
+function getCookieUserIdAds(name) {
+                        var matches = document.cookie.match(new RegExp(
+                        '(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'
+                        ));
+
+                        return matches ? decodeURIComponent(matches[1]) : undefined;
+                    }
+
+                    
+
+
+setInterval(function() {
+  var gclid;
+  if (localStorage.getItem('gclid')) {
+    gclid = JSON.parse(localStorage.getItem('gclid')).value;
+  }
+  var userId = getCookieUserIdAds('IV%5FUID');
+  var userUid = getCookieUserIdAds('USER_UUID');
+  
+  if (gclid && userId) {
+	  fetch( 'https://ivlive-front.ivolatility.com/token/get?userId='+ userId +'&uuid=' + userUid)
+		.then( response => {
+			response.text().then(
+				result => {
+				
+				fetch('https://ivlive-front.ivolatility.com/user-settings/save/gclid?userId='+userId + '&gclid='+gclid, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + result
+                        }
+                    })
+				
+				},
+				error => {
+				
+				}
+  );
+		} );
+	  
+
+  }
+}, 10000);
+
+function saveUserGoogleAdsSession() {
+	var gclid;
+  if (localStorage.getItem('gclid')) {
+    gclid = JSON.parse(localStorage.getItem('gclid')).value;
+  }
+  var userId = getCookieUserIdAds('IV%5FUID');
+  var isAd = getCookieUserIdAds('isAd');
+  var userUid = getCookieUserIdAds('USER_UUID');
+  var url = window.location.href.replaceAll('#', '') + (isAd ? '**Email' : '');
+  var ref = document.referrer;
+  var uniqId = getCookieUserIdAds('STAT%5FUNIQUE%5FUID');
+
+  
+  fetch('https://ivlive-front.ivolatility.com/token/save/google-session?userId=' + (userId ? userId : '0') + '&gclid='+ (gclid ? gclid : '0')  + '&url='+ url + '&uniqId='+ uniqId+'&refUrl='+ref , {
+                        method: 'POST'
+                    })
+  
+}
+
+saveUserGoogleAdsSession();
+
+
+setTimeout(() =>{
+
+if (localStorage.getItem('gclid')) {
+	document.querySelectorAll('a').forEach( (link) => {
+			if( link.href.indexOf('ivlive.ivolatility.com') > -1) {
+				if (link.href.indexOf('?') > -1) {
+				   link.href = link.href + '&gclid=' + JSON.parse(localStorage.getItem('gclid')).value;	
+				} else {
+				    link.href = link.href + '?gclid=' + JSON.parse(localStorage.getItem('gclid')).value;					   
+				}
+			}
+		})
+}
+
+}, 1000);
+
+
+
+setTimeout(() => {
+
+    var userId = getCookieUserIdAds('IV%5FUID');
+
+    if (window.location.href.includes('manage_favourites.j') ||
+        window.location.href.includes('view_favourites.j') ||
+        window.location.href.includes('custom_charts.j') ||
+        window.location.href === 'https://www.ivolatility.com/calc/' ||
+        window.location.href === 'https://www.ivolatility.com/calc/calc.j'
+    ) {
+        window.location.href = "/services.j";
+    }
+    if (window.location.href.includes('https://www.ivolatility.com/futures_data.j') ||
+        window.location.href.includes('https://www.ivolatility.com/futures_options.j') ||
+        window.location.href.includes('https://www.ivolatility.com/futures_calculator') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_iv/futranker.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_hv/futranker.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_iv/ranker.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_hist_data/ivx.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_hist_data/hv.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_hist_data/cb.j') ||
+        window.location.href.includes('https://www.ivolatility.com/adv_hist_data/sk.j') ||
+        window.location.href.includes('https://www.ivolatility.com/rtservice.j')) {
+        if (userId) {
+            window.location.href = "/iv-live.j";
+        } else {
+            window.location.href = "/services.j";
+        }
+    }
+
+    if (
+        window.location.href.includes('https://www.ivolatility.com/npwa/strategist.j') ||
+        window.location.href.includes('https://www.ivolatility.com/ccwa/strategist.j') ||
+        window.location.href.includes('https://www.ivolatility.com/mppa/strategist.j') ||
+        window.location.href.includes('https://www.ivolatility.com/collar/collar_calc.j')) {
+        window.location.href = "/strategy_service.j";
+    }
+
+    if (
+        window.location.href.includes('https://www.ivolatility.com/eda.j') ||
+        window.location.href.includes('https://www.ivolatility.com/home.asp') ||
+        window.location.href.includes('https://www.ivolatility.com/main.asp') ||
+        window.location.href.includes('https://www.ivolatility.com/charts.asp') ||
+        window.location.href.includes('https://www.ivolatility.com/help.asp')
+    ) {
+        window.location.href = "/dashboard.j";
+    }
+
+
+
+}, 100);

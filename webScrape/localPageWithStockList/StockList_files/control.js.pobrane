@@ -1,0 +1,19 @@
+function bodyLoaded()
+{
+  
+}
+var a=0;
+
+function Blink() {
+   if(document.getElementById("blink")==null) return;
+   a+=150;
+   if(a>2750) {
+    obj.style.visibility="visible";
+    return;	
+   }
+   obj=document.getElementById("blink");
+   if (obj.style.visibility=="hidden") obj.style.visibility="visible";
+      else obj.style.visibility="hidden";
+   window.setTimeout("Blink();",250);
+}
+
